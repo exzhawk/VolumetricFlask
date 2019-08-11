@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "omnidirectional=true": {
+      "model": "volumetricflask:o_interface"
+    },
+    "omnidirectional=false": {
+      "model": "volumetricflask:o_interface_oriented",
+      "x": 90
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "forge_marker": 1,
+  "variants": {
+    "inventory": {
+      "model": "forge:forgebucket",
+      "textures": {
+        "base": "volumetricflask:items/volumetric_flask",
+        "fluid": "volumetricflask:items/volumetric_flask_overlay"
+      },
+      "transform": "forge:default-item"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+[
+{
+  "modid": "volumetricflask",
+  "name": "Volumetric Flask",
+  "description": "Volumetric Flask",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Epix Zhang"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
