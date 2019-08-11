@@ -1,12 +1,10 @@
 package me.exz.volumetricflask;
 
 import me.exz.volumetricflask.proxy.CommonProxy;
-import me.exz.volumetricflask.server.Command;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(modid = VolumetricFlask.MODID, name = VolumetricFlask.NAME, version = VolumetricFlask.VERSION, dependencies = "required-after:appliedenergistics2")
 public class VolumetricFlask {
@@ -29,8 +27,4 @@ public class VolumetricFlask {
         proxy.init(event);
     }
 
-    @Mod.EventHandler
-    public void serverStarting(FMLServerStartingEvent event) {
-        event.registerServerCommand(new Command());
-    }
 }
