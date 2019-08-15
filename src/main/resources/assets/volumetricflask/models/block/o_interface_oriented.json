@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "volumetricflask:blocks/interface",
+    "down": "volumetricflask:blocks/interface_alternate",
+    "up": "volumetricflask:blocks/interface",
+    "north": "volumetricflask:blocks/interface_alternate_arrow",
+    "south": "volumetricflask:blocks/interface_alternate_arrow",
+    "east": "volumetricflask:blocks/interface_alternate_arrow",
+    "west": "volumetricflask:blocks/interface_alternate_arrow"
+  }
+}
