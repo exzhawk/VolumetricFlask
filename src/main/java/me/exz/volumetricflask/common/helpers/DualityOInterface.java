@@ -11,6 +11,7 @@ import appeng.me.helpers.AENetworkProxy;
 import appeng.util.ConfigManager;
 import appeng.util.InventoryAdaptor;
 import me.exz.volumetricflask.common.items.ItemVolumetricFlask;
+import me.exz.volumetricflask.utils.FluidAdaptor;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -26,30 +27,13 @@ import java.util.Iterator;
 import java.util.List;
 
 public class DualityOInterface extends DualityInterface {
-//    private List<ItemStack> waitingToSend = null;
-
-//    private final AENetworkProxy gridProxy;
-//    private List<ICraftingPatternDetails> craftingList = null;
-//    private final IInterfaceHost iHost;
-//    private final ConfigManager cm = new ConfigManager(this);
-
 
     public DualityOInterface(AENetworkProxy networkProxy, IInterfaceHost ih) {
         super(networkProxy, ih);
-//        this.gridProxy = networkProxy;
-//        this.iHost = ih;
     }
 
     @Override
     public boolean pushPattern(ICraftingPatternDetails patternDetails, InventoryCrafting table) {
-//        Method method = ReflectionHelper.findMethod(DualityInterface.class, "hasItemsToSend", null);
-//        try {
-//            method.invoke(this);
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        } catch (InvocationTargetException e) {
-//            e.printStackTrace();
-//        }
         AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
         List<ICraftingPatternDetails> craftingList = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "craftingList");
         IInterfaceHost iHost = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "iHost");
@@ -86,28 +70,65 @@ public class DualityOInterface extends DualityInterface {
                 }
                 continue;
             }
-
             final InventoryAdaptor ad = InventoryAdaptor.getAdaptor(te, s.getOpposite());
-            final IFluidHandler fluidHandler = this.getFluidHandler(te, s.getOpposite());
-            if (ad != null || fluidHandler != null) {
-                if (this.isBlocking()) {
+            final FluidAdaptor fad = FluidAdaptor.getAdaptor(te, s.getOpposite());
+            if (ad == null && fad == null) {
+                //no inventory and no tank
+                continue;
+            }
+            //is blocking
+            if (this.isBlocking()) {
+                if (ad != null) {
                     if (!ad.simulateRemove(1, ItemStack.EMPTY, null).isEmpty()) {
                         continue;
                     }
                 }
-
-                if (this.acceptsItems(ad, table)) {
-                    for (int x = 0; x < table.getSizeInventory(); x++) {
-                        final ItemStack is = table.getStackInSlot(x);
-                        if (!is.isEmpty()) {
-                            final ItemStack added = ad.addItems(is);
-                            this.addToSendList(added);
-                        }
+                if (fad != null) {
+                    if (!fad.isEmpty()) {
+                        continue;
                     }
-                    this.pushItemsOut(possibleDirections);
-                    return true;
                 }
             }
+
+            //determine whether pattern has flask or other items
+            boolean hasOther = false;
+            boolean hasFlask = false;
+            for (int x = 0; x < table.getSizeInventory(); x++) {
+                final ItemStack is = table.getStackInSlot(x);
+                if (!is.isEmpty()) {
+                    if (is.getItem() instanceof ItemVolumetricFlask) {
+                        hasFlask = true;
+                    } else {
+                        hasOther = true;
+                    }
+                }
+            }
+
+            if (hasOther) {
+                if (ad == null || !this.acceptsItems(ad, table)) {
+                    continue;
+                }
+            }
+            if (hasFlask) {
+                if (fad == null || !this.acceptsFluid(fad, table)) {
+                    continue;
+                }
+            }
+
+            for (int x = 0; x < table.getSizeInventory(); x++) {
+                final ItemStack is = table.getStackInSlot(x);
+                if (!is.isEmpty()) {
+                    if (is.getItem() instanceof ItemVolumetricFlask) {
+                        final ItemStack added = fad.addFlask(is);
+                        this.addToSendList(added);
+                    } else {
+                        final ItemStack added = ad.addItems(is);
+                        this.addToSendList(added);
+                    }
+                }
+            }
+            this.pushItemsOut(possibleDirections);
+            return true;
         }
 
         return false;
@@ -162,7 +183,7 @@ public class DualityOInterface extends DualityInterface {
         }
 
         if (waitingToSend.isEmpty()) {
-            waitingToSend = null;
+            ReflectionHelper.setPrivateValue(DualityInterface.class, this, null, "waitingToSend");
         }
     }
 
@@ -174,7 +195,10 @@ public class DualityOInterface extends DualityInterface {
     private boolean acceptsItems(final InventoryAdaptor ad, final InventoryCrafting table) {
         for (int x = 0; x < table.getSizeInventory(); x++) {
             final ItemStack is = table.getStackInSlot(x);
-            if (is.isEmpty() || is.getItem() instanceof ItemVolumetricFlask) {
+            if (is.isEmpty()) {
+                continue;
+            }
+            if (is.getItem() instanceof ItemVolumetricFlask) {
                 continue;
             }
 
@@ -186,7 +210,20 @@ public class DualityOInterface extends DualityInterface {
         return true;
     }
 
-    private boolean acceptsFluid(final IFluidHandler fluidHandler, final InventoryCrafting table) {
+    private boolean acceptsFluid(final FluidAdaptor fad, final InventoryCrafting table) {
+        for (int x = 0; x < table.getSizeInventory(); x++) {
+            final ItemStack is = table.getStackInSlot(x);
+            if (is.isEmpty()) {
+                continue;
+            }
+            if (!(is.getItem() instanceof ItemVolumetricFlask)) {
+                continue;
+            }
+
+            if (!fad.simulateAdd(is.copy()).isEmpty()) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -198,6 +235,8 @@ public class DualityOInterface extends DualityInterface {
         List<ItemStack> waitingToSend = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "waitingToSend");
         if (waitingToSend == null) {
             waitingToSend = new ArrayList<>();
+            ReflectionHelper.setPrivateValue(DualityInterface.class, this, waitingToSend, "waitingToSend");
+//            waitingToSend = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "waitingToSend");
         }
 
         waitingToSend.add(is);
