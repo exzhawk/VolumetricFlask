@@ -1,2 +1,3 @@
 itemGroup.volumetricflask=Volumetric Flask
 item.volumetricflask.volumetric_flask.name=Volumetric Flask
+tile.volumetricflask.o_interface.name=Interface (w/ Volumetric Flask)
