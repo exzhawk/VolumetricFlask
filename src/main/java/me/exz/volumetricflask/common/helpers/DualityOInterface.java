@@ -10,6 +10,7 @@ import appeng.me.GridAccessException;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.util.ConfigManager;
 import appeng.util.InventoryAdaptor;
+import appeng.util.inv.AdaptorItemHandler;
 import me.exz.volumetricflask.common.items.ItemVolumetricFlask;
 import me.exz.volumetricflask.utils.FluidAdaptor;
 import net.minecraft.inventory.InventoryCrafting;
@@ -121,6 +122,9 @@ public class DualityOInterface extends DualityInterface {
                     if (is.getItem() instanceof ItemVolumetricFlask) {
                         final ItemStack added = fad.addFlask(is);
                         this.addToSendList(added);
+                        ItemStack emptyVolumetricFlask = new ItemStack(is.getItem(), is.getCount() - added.getCount());
+                        InventoryAdaptor iad = new AdaptorItemHandler(this.getInternalInventory());
+                        iad.addItems(emptyVolumetricFlask);
                     } else {
                         final ItemStack added = ad.addItems(is);
                         this.addToSendList(added);
@@ -154,25 +158,47 @@ public class DualityOInterface extends DualityInterface {
         final Iterator<ItemStack> i = waitingToSend.iterator();
         while (i.hasNext()) {
             ItemStack whatToSend = i.next();
-
-            for (final EnumFacing s : possibleDirections) {
-                final TileEntity te = w.getTileEntity(tile.getPos().offset(s));
-                if (te == null) {
-                    continue;
-                }
-
-                final InventoryAdaptor ad = InventoryAdaptor.getAdaptor(te, s.getOpposite());
-                if (ad != null) {
-                    final ItemStack result = ad.addItems(whatToSend);
-
-                    if (result.isEmpty()) {
-                        whatToSend = ItemStack.EMPTY;
-                    } else {
-                        whatToSend.setCount(whatToSend.getCount() - (whatToSend.getCount() - result.getCount()));
+            if (whatToSend.getItem() instanceof ItemVolumetricFlask) {
+                for (final EnumFacing s : possibleDirections) {
+                    final TileEntity te = w.getTileEntity(tile.getPos().offset(s));
+                    if (te == null) {
+                        continue;
                     }
+                    final FluidAdaptor fad = FluidAdaptor.getAdaptor(te, s.getOpposite());
+                    if (fad != null) {
+                        final ItemStack result = fad.addFlask(whatToSend);
+                        ItemStack emptyVolumetricFlask = new ItemStack(whatToSend.getItem(), whatToSend.getCount() - result.getCount());
+                        InventoryAdaptor iad = new AdaptorItemHandler(this.getInternalInventory());
+                        iad.addItems(emptyVolumetricFlask);
+                        if (result.isEmpty()) {
+                            whatToSend = ItemStack.EMPTY;
+                        } else {
+                            whatToSend.setCount(whatToSend.getCount() - (whatToSend.getCount() - result.getCount()));
+                        }
 
-                    if (whatToSend.isEmpty()) {
-                        break;
+                        if (whatToSend.isEmpty()) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                for (final EnumFacing s : possibleDirections) {
+                    final TileEntity te = w.getTileEntity(tile.getPos().offset(s));
+                    if (te == null) {
+                        continue;
+                    }
+                    final InventoryAdaptor ad = InventoryAdaptor.getAdaptor(te, s.getOpposite());
+                    if (ad != null) {
+                        final ItemStack result = ad.addItems(whatToSend);
+
+                        if (result.isEmpty()) {
+                            whatToSend = ItemStack.EMPTY;
+                        } else {
+                            whatToSend.setCount(whatToSend.getCount() - (whatToSend.getCount() - result.getCount()));
+                        }
+                        if (whatToSend.isEmpty()) {
+                            break;
+                        }
                     }
                 }
             }
@@ -221,6 +247,11 @@ public class DualityOInterface extends DualityInterface {
             }
 
             if (!fad.simulateAdd(is.copy()).isEmpty()) {
+                return false;
+            }
+            ItemStack emptyVolumetricFlask = new ItemStack(is.getItem(), is.getCount());
+            InventoryAdaptor iad = new AdaptorItemHandler(this.getInternalInventory());
+            if (!iad.simulateAdd(emptyVolumetricFlask).isEmpty()) {
                 return false;
             }
         }
