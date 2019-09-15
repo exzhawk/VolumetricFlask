@@ -15,6 +15,7 @@ import me.exz.volumetricflask.common.items.ItemVolumetricFlask;
 import me.exz.volumetricflask.utils.FluidAdaptor;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -123,6 +124,7 @@ public class DualityOInterface extends DualityInterface {
                         final ItemStack added = fad.addFlask(is);
                         this.addToSendList(added);
                         ItemStack emptyVolumetricFlask = new ItemStack(is.getItem(), is.getCount() - added.getCount());
+                        emptyVolumetricFlask.setTagCompound(new NBTTagCompound());
                         InventoryAdaptor iad = new AdaptorItemHandler(this.getInternalInventory());
                         iad.addItems(emptyVolumetricFlask);
                     } else {
@@ -168,6 +170,7 @@ public class DualityOInterface extends DualityInterface {
                     if (fad != null) {
                         final ItemStack result = fad.addFlask(whatToSend);
                         ItemStack emptyVolumetricFlask = new ItemStack(whatToSend.getItem(), whatToSend.getCount() - result.getCount());
+                        emptyVolumetricFlask.setTagCompound(new NBTTagCompound());
                         InventoryAdaptor iad = new AdaptorItemHandler(this.getInternalInventory());
                         iad.addItems(emptyVolumetricFlask);
                         if (result.isEmpty()) {
@@ -250,6 +253,7 @@ public class DualityOInterface extends DualityInterface {
                 return false;
             }
             ItemStack emptyVolumetricFlask = new ItemStack(is.getItem(), is.getCount());
+            emptyVolumetricFlask.setTagCompound(new NBTTagCompound());
             InventoryAdaptor iad = new AdaptorItemHandler(this.getInternalInventory());
             if (!iad.simulateAdd(emptyVolumetricFlask).isEmpty()) {
                 return false;
