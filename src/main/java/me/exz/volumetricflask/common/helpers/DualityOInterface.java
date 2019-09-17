@@ -120,14 +120,14 @@ public class DualityOInterface extends DualityInterface {
             for (int x = 0; x < table.getSizeInventory(); x++) {
                 final ItemStack is = table.getStackInSlot(x);
                 if (!is.isEmpty()) {
-                    if (is.getItem() instanceof ItemVolumetricFlask) {
+                    if (is.getItem() instanceof ItemVolumetricFlask && fad!=null) {
                         final ItemStack added = fad.addFlask(is);
                         this.addToSendList(added);
                         ItemStack emptyVolumetricFlask = new ItemStack(is.getItem(), is.getCount() - added.getCount());
                         emptyVolumetricFlask.setTagCompound(new NBTTagCompound());
                         InventoryAdaptor iad = new AdaptorItemHandler(this.getInternalInventory());
                         iad.addItems(emptyVolumetricFlask);
-                    } else {
+                    } else if(ad!=null) {
                         final ItemStack added = ad.addItems(is);
                         this.addToSendList(added);
                     }
