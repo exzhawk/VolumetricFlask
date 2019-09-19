@@ -2,3 +2,4 @@ itemGroup.volumetricflask=Volumetric Flask
 item.volumetricflask.volumetric_flask.name=Volumetric Flask
 tile.volumetricflask.o_interface.name=Volumetric Interface
 tile.volumetricflask.buffer.name=Buffer
+tile.volumetricflask.filler.name=Filler

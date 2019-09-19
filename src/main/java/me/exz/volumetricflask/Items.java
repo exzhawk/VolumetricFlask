@@ -1,9 +1,11 @@
 package me.exz.volumetricflask;
 
 import me.exz.volumetricflask.common.block.BlockBuffer;
+import me.exz.volumetricflask.common.block.BlockFiller;
 import me.exz.volumetricflask.common.block.BlockOInterface;
 import me.exz.volumetricflask.common.items.ItemVolumetricFlask;
 import me.exz.volumetricflask.common.tile.TileBuffer;
+import me.exz.volumetricflask.common.tile.TileFiller;
 import me.exz.volumetricflask.common.tile.TileOInterface;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -27,7 +29,7 @@ import static me.exz.volumetricflask.VolumetricFlask.MODID;
 
 @Mod.EventBusSubscriber(modid = MODID)
 public class Items {
-    private static final List<ItemVolumetricFlask> VOLUMETRIC_FLASKS = Arrays.asList(
+    public static final List<ItemVolumetricFlask> VOLUMETRIC_FLASKS = Arrays.asList(
             ItemVolumetricFlask.VOLUMETRIC_FLASK_16,
             ItemVolumetricFlask.VOLUMETRIC_FLASK_32,
             ItemVolumetricFlask.VOLUMETRIC_FLASK_18,
@@ -40,6 +42,8 @@ public class Items {
     public static final ItemBlock ITEM_BLOCK_O_INTERFACE = new ItemBlock(BLOCK_O_INTERFACE);
     public static final BlockBuffer BLOCK_BUFFER = new BlockBuffer();
     public static final ItemBlock ITEM_BLOCK_BUFFER = new ItemBlock(BLOCK_BUFFER);
+    public static final BlockFiller BLOCK_FILLER = new BlockFiller();
+    public static final ItemBlock ITEM_BLOCK_FILLER = new ItemBlock(BLOCK_FILLER);
 
     public Items() {
         BLOCK_O_INTERFACE.setTileEntity(TileOInterface.class);
@@ -55,6 +59,8 @@ public class Items {
         registry.register(ITEM_BLOCK_O_INTERFACE);
         ITEM_BLOCK_BUFFER.setRegistryName(ITEM_BLOCK_BUFFER.getBlock().getRegistryName());
         registry.register(ITEM_BLOCK_BUFFER);
+        ITEM_BLOCK_FILLER.setRegistryName(ITEM_BLOCK_FILLER.getBlock().getRegistryName());
+        registry.register(ITEM_BLOCK_FILLER);
     }
 
     @SubscribeEvent
@@ -62,9 +68,11 @@ public class Items {
         IForgeRegistry<Block> registry = event.getRegistry();
         GameRegistry.registerTileEntity(TileOInterface.class, new ResourceLocation(MODID, "o_interface"));
         GameRegistry.registerTileEntity(TileBuffer.class, new ResourceLocation(MODID, "buffer"));
+        GameRegistry.registerTileEntity(TileFiller.class, new ResourceLocation(MODID, "filler"));
         BLOCK_O_INTERFACE.setTileEntity(TileOInterface.class);
         registry.register(BLOCK_O_INTERFACE);
         registry.register(BLOCK_BUFFER);
+        registry.register(BLOCK_FILLER);
     }
 
     @SubscribeEvent
@@ -75,5 +83,6 @@ public class Items {
         }
         ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_O_INTERFACE, 0, new ModelResourceLocation(ITEM_BLOCK_O_INTERFACE.getRegistryName(), "omnidirectional=true"));
         ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_BUFFER, 0, new ModelResourceLocation(BLOCK_BUFFER.getRegistryName(), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_FILLER, 0, new ModelResourceLocation(BLOCK_FILLER.getRegistryName(), "inventory"));
     }
 }
