@@ -1,13 +1,23 @@
 package me.exz.volumetricflask.common.helpers;
 
+import appeng.api.AEApi;
+import appeng.api.config.Actionable;
 import appeng.api.config.Settings;
 import appeng.api.config.YesNo;
 import appeng.api.implementations.tiles.ICraftingMachine;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
+import appeng.api.networking.security.IActionSource;
+import appeng.api.storage.IMEInventory;
+import appeng.api.storage.channels.IFluidStorageChannel;
+import appeng.api.storage.data.IAEFluidStack;
+import appeng.fluids.util.AEFluidInventory;
+import appeng.fluids.util.IAEFluidInventory;
+import appeng.fluids.util.IAEFluidTank;
 import appeng.helpers.DualityInterface;
 import appeng.helpers.IInterfaceHost;
 import appeng.me.GridAccessException;
 import appeng.me.helpers.AENetworkProxy;
+import appeng.me.helpers.MachineSource;
 import appeng.util.ConfigManager;
 import appeng.util.InventoryAdaptor;
 import appeng.util.inv.AdaptorItemHandler;
@@ -18,7 +28,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -28,7 +42,10 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
-public class DualityOInterface extends DualityInterface {
+public class DualityOInterface extends DualityInterface implements IAEFluidInventory, ITickable {
+
+    private final AEFluidInventory tanks = new AEFluidInventory(this, 1, Fluid.BUCKET_VOLUME * 64);
+    private static final String FLUID_NBT_KEY = "storage_fluid";
 
     public DualityOInterface(AENetworkProxy networkProxy, IInterfaceHost ih) {
         super(networkProxy, ih);
@@ -120,14 +137,14 @@ public class DualityOInterface extends DualityInterface {
             for (int x = 0; x < table.getSizeInventory(); x++) {
                 final ItemStack is = table.getStackInSlot(x);
                 if (!is.isEmpty()) {
-                    if (is.getItem() instanceof ItemVolumetricFlask && fad!=null) {
+                    if (is.getItem() instanceof ItemVolumetricFlask && fad != null) {
                         final ItemStack added = fad.addFlask(is);
                         this.addToSendList(added);
                         ItemStack emptyVolumetricFlask = new ItemStack(is.getItem(), is.getCount() - added.getCount());
                         emptyVolumetricFlask.setTagCompound(new NBTTagCompound());
                         InventoryAdaptor iad = new AdaptorItemHandler(this.getInternalInventory());
                         iad.addItems(emptyVolumetricFlask);
-                    } else if(ad!=null) {
+                    } else if (ad != null) {
                         final ItemStack added = ad.addItems(is);
                         this.addToSendList(added);
                     }
@@ -288,5 +305,52 @@ public class DualityOInterface extends DualityInterface {
             return te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, d);
         }
         return null;
+    }
+
+    @Override
+    public void writeToNBT(NBTTagCompound data) {
+        super.writeToNBT(data);
+        this.tanks.writeToNBT(data, FLUID_NBT_KEY);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound data) {
+        super.readFromNBT(data);
+        this.tanks.readFromNBT(data, FLUID_NBT_KEY);
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capabilityClass, EnumFacing facing) {
+        if (capabilityClass == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
+            return (T) this.tanks;
+        } else {
+            return super.getCapability(capabilityClass, facing);
+        }
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capabilityClass, EnumFacing facing) {
+        return super.hasCapability(capabilityClass, facing) || capabilityClass == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY;
+    }
+
+    @Override
+    public void onFluidInventoryChanged(IAEFluidTank inv, int slot) {
+
+    }
+
+    @Override
+    public void update() {
+        IAEFluidStack aeFluidStack = this.tanks.getFluidInSlot(0);
+        if (aeFluidStack != null && aeFluidStack.getStackSize() != 0) {
+            try {
+                AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
+                IMEInventory<IAEFluidStack> dest = gridProxy.getStorage().getInventory(AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class));
+                IActionSource src = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "interfaceRequestSource");
+                IAEFluidStack left = dest.injectItems(aeFluidStack.copy(), Actionable.MODULATE, src);
+                this.tanks.setFluidInSlot(0, left);
+            } catch (GridAccessException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

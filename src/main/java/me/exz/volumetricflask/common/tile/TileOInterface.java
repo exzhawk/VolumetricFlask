@@ -30,6 +30,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -41,7 +42,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 
-public class TileOInterface extends TileInterface {
+public class TileOInterface extends TileInterface implements ITickable {
 
 
     private final DualityOInterface duality = new DualityOInterface(this.getProxy(), this);
@@ -285,6 +286,17 @@ public class TileOInterface extends TileInterface {
     @Override
     public GuiBridge getGuiBridge() {
         return GuiBridge.GUI_INTERFACE;
+    }
+
+    @Override
+    public void update() {
+        if (world.isRemote) {
+            return;
+        }
+        if (world.getTotalWorldTime() % 20 != 0) {
+            return;
+        }
+        this.duality.update();
     }
 }
 
