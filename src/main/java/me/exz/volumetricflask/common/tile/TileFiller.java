@@ -48,7 +48,6 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static me.exz.volumetricflask.Items.VOLUMETRIC_FLASKS;
-import static me.exz.volumetricflask.common.items.ItemVolumetricFlask.VOLUMETRIC_FLASK_16;
 
 public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, ICraftingProvider, IMEMonitorHandlerReceiver<IAEFluidStack>, ITickable {
 
@@ -78,6 +77,7 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
             }
             for (ItemVolumetricFlask flask : VOLUMETRIC_FLASKS) {
                 ItemStack empty = new ItemStack(flask, 1);
+                empty.setTagCompound(new NBTTagCompound());
                 ItemStack filled = new ItemStack(flask, 1);
                 IFluidHandler fluidHandler = filled.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
                 int capacity = flask.capacity;
@@ -111,6 +111,9 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
 
     @Override
     public boolean pushPattern(ICraftingPatternDetails patternDetails, InventoryCrafting table) {
+        if (this.returnStack != null && !this.returnStack.isEmpty()) {
+            return false;
+        }
         IStorageGrid storage = getStorageGrid();
         if (storage == null) {
             return false;
