@@ -369,18 +369,21 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
         if (!hasWorld()) {
             return;
         }
-        if (this.returnStack == null || this.returnStack.isEmpty()) {
-            return;
-        }
         IStorageGrid storage = getStorageGrid();
         if (storage == null) {
             return;
         }
-        IAEItemStack toInject = itemStorageChannel.createStack(this.returnStack);
-        if (storage.getInventory(itemStorageChannel).canAccept(toInject.copy()) &&
-                storage.getInventory(itemStorageChannel).injectItems(toInject.copy(), Actionable.SIMULATE, new MachineSource(this)) == null) {
-            storage.getInventory(itemStorageChannel).injectItems(toInject, Actionable.MODULATE, new MachineSource(this));
-            this.returnStack = null;
+        if (this.returnStack != null && !this.returnStack.isEmpty()) {
+            IAEItemStack toInject = itemStorageChannel.createStack(this.returnStack);
+            if (storage.getInventory(itemStorageChannel).canAccept(toInject.copy()) &&
+                    storage.getInventory(itemStorageChannel).injectItems(toInject.copy(), Actionable.SIMULATE, new MachineSource(this)) == null) {
+                storage.getInventory(itemStorageChannel).injectItems(toInject, Actionable.MODULATE, new MachineSource(this));
+                this.returnStack = null;
+            }
+        }
+
+        if (world.getTotalWorldTime() % 100 == 0) {
+            postChange(storage.getInventory(fluidStorageChannel), null, null);
         }
     }
 }
