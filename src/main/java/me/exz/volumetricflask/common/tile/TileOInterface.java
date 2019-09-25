@@ -34,6 +34,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -47,9 +48,6 @@ public class TileOInterface extends TileInterface implements ITickable {
 
     private final DualityOInterface duality = new DualityOInterface(this.getProxy(), this);
 
-    // Indicates that this interface has no specific direction set
-    private boolean omniDirectional = true;
-
     @MENetworkEventSubscribe
     public void stateChange(final MENetworkChannelsChanged c) {
         this.duality.notifyNeighbors();
@@ -58,47 +56,6 @@ public class TileOInterface extends TileInterface implements ITickable {
     @MENetworkEventSubscribe
     public void stateChange(final MENetworkPowerStatusChange c) {
         this.duality.notifyNeighbors();
-    }
-
-    public void setSide(final EnumFacing facing) {
-        if (Platform.isClient()) {
-            return;
-        }
-
-        EnumFacing newForward = facing;
-
-        if (!this.omniDirectional && this.getForward() == facing.getOpposite()) {
-            newForward = facing;
-        } else if (!this.omniDirectional && (this.getForward() == facing || this.getForward() == facing.getOpposite())) {
-            this.omniDirectional = true;
-        } else if (this.omniDirectional) {
-            newForward = facing.getOpposite();
-            this.omniDirectional = false;
-        } else {
-            newForward = Platform.rotateAround(this.getForward(), facing);
-        }
-
-        if (this.omniDirectional) {
-            this.setOrientation(EnumFacing.NORTH, EnumFacing.UP);
-        } else {
-            EnumFacing newUp = EnumFacing.UP;
-            if (newForward == EnumFacing.UP || newForward == EnumFacing.DOWN) {
-                newUp = EnumFacing.NORTH;
-            }
-            this.setOrientation(newForward, newUp);
-        }
-
-        this.configureNodeSides();
-        this.markForUpdate();
-        this.saveChanges();
-    }
-
-    private void configureNodeSides() {
-        if (this.omniDirectional) {
-            this.getProxy().setValidSides(EnumSet.allOf(EnumFacing.class));
-        } else {
-            this.getProxy().setValidSides(EnumSet.complementOf(EnumSet.of(this.getForward())));
-        }
     }
 
     @Override
@@ -113,8 +70,6 @@ public class TileOInterface extends TileInterface implements ITickable {
 
     @Override
     public void onReady() {
-        this.configureNodeSides();
-
         super.onReady();
         this.duality.initialize();
     }
@@ -122,7 +77,6 @@ public class TileOInterface extends TileInterface implements ITickable {
     @Override
     public NBTTagCompound writeToNBT(final NBTTagCompound data) {
         super.writeToNBT(data);
-        data.setBoolean("omniDirectional", this.omniDirectional);
         this.duality.writeToNBT(data);
         return data;
     }
@@ -130,23 +84,8 @@ public class TileOInterface extends TileInterface implements ITickable {
     @Override
     public void readFromNBT(final NBTTagCompound data) {
         super.readFromNBT(data);
-        this.omniDirectional = data.getBoolean("omniDirectional");
 
         this.duality.readFromNBT(data);
-    }
-
-    @Override
-    protected boolean readFromStream(final ByteBuf data) throws IOException {
-        final boolean c = super.readFromStream(data);
-        boolean oldOmniDirectional = this.omniDirectional;
-        this.omniDirectional = data.readBoolean();
-        return oldOmniDirectional != this.omniDirectional || c;
-    }
-
-    @Override
-    protected void writeToStream(final ByteBuf data) throws IOException {
-        super.writeToStream(data);
-        data.writeBoolean(this.omniDirectional);
     }
 
     @Override
@@ -192,19 +131,6 @@ public class TileOInterface extends TileInterface implements ITickable {
     @Override
     public DualityInterface getInterfaceDuality() {
         return this.duality;
-    }
-
-    @Override
-    public EnumSet<EnumFacing> getTargets() {
-        if (this.omniDirectional) {
-            return EnumSet.allOf(EnumFacing.class);
-        }
-        return EnumSet.of(this.getForward());
-    }
-
-    @Override
-    public TileEntity getTileEntity() {
-        return this;
     }
 
     @Override
@@ -257,13 +183,6 @@ public class TileOInterface extends TileInterface implements ITickable {
         this.duality.setPriority(newValue);
     }
 
-    /**
-     * @return True if this interface is omni-directional.
-     */
-    public boolean isOmniDirectional() {
-        return this.omniDirectional;
-    }
-
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         return this.duality.hasCapability(capability, facing) || super.hasCapability(capability, facing);
@@ -276,16 +195,6 @@ public class TileOInterface extends TileInterface implements ITickable {
             return result;
         }
         return super.getCapability(capability, facing);
-    }
-
-    @Override
-    public ItemStack getItemStackRepresentation() {
-        return AEApi.instance().definitions().blocks().iface().maybeStack(1).orElse(ItemStack.EMPTY);
-    }
-
-    @Override
-    public GuiBridge getGuiBridge() {
-        return GuiBridge.GUI_INTERFACE;
     }
 
     @Override
