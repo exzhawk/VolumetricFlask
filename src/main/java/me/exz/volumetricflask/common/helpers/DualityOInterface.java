@@ -10,6 +10,8 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.channels.IFluidStorageChannel;
 import appeng.api.storage.data.IAEFluidStack;
+import appeng.fluids.helper.DualityFluidInterface;
+import appeng.fluids.helper.IFluidInterfaceHost;
 import appeng.fluids.util.AEFluidInventory;
 import appeng.fluids.util.IAEFluidInventory;
 import appeng.fluids.util.IAEFluidTank;
@@ -75,6 +77,17 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
                     continue;
                 }
                 continue;
+            }
+
+            if (te instanceof IFluidInterfaceHost) {
+                try {
+                    AENetworkProxy gridProxy2 = ReflectionHelper.getPrivateValue(DualityFluidInterface.class, ((IFluidInterfaceHost) te).getDualityFluidInterface(), "gridProxy");
+                    if (gridProxy2.getGrid() == gridProxy.getGrid()) {
+                        continue;
+                    }
+                } catch (GridAccessException e) {
+                    continue;
+                }
             }
 
             if (te instanceof ICraftingMachine) {
