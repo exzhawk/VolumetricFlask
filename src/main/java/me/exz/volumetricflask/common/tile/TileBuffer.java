@@ -81,6 +81,9 @@ public class TileBuffer extends TileEntity implements ITickable, IAEAppEngInvent
             if (te instanceof TileInterface) {
                 continue;
             }
+            if (te instanceof TileBuffer){
+                continue;
+            }
 
             final InventoryAdaptor ad = InventoryAdaptor.getAdaptor(te, facing.getOpposite());
             final IFluidHandler fh = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing.getOpposite());
