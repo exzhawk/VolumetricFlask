@@ -32,6 +32,9 @@ public class BlockFiller extends Block {
         this.setUnlocalizedName(MODID + ".filler");
         this.setRegistryName("filler");
         this.setCreativeTab(TAB_VOLUMETRIC_FLASK);
+        this.setSoundType(SoundType.STONE);
+        this.setHardness(2.5F);
+        this.setHarvestLevel("pickaxe",0);
     }
 
     @Override
