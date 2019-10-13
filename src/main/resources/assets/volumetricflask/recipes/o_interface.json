@@ -5,8 +5,9 @@
       "item": "appliedenergistics2:interface"
     },
     {
-      "item": "minecraft:paper"
-    }
+      "type": "forge:ore_dict",
+      "ore": "paper"
+}
   ],
   "result": {
     "item": "volumetricflask:o_interface",

@@ -1,6 +1,6 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "pattern": [
+  "type": "forge:ore_shaped",
+"pattern": [
     "B  ",
     "P  ",
     "   "
@@ -10,11 +10,13 @@
       "item": "minecraft:glass_bottle"
     },
     "P": {
-      "item": "minecraft:paper"
-    }
+      "type": "forge:ore_dict",
+      "ore": "paper"
+}
   },
   "result": {
     "item": "volumetricflask:volumetric_flask_32",
     "nbt": {}
-  }
+  },
+  "mirrored": false
 }

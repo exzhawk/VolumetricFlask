@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "forge:ore_shaped",
   "pattern": [
     "BBB",
     "BCB",
@@ -10,7 +10,8 @@
       "item": "minecraft:glass_bottle"
     },
     "C": {
-      "item": "minecraft:chest"
+      "type": "forge:ore_dict",
+      "ore": "chest"
     }
   },
   "result": {
