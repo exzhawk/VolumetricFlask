@@ -16,5 +16,6 @@
   "result": {
     "item": "volumetricflask:volumetric_flask_144",
     "nbt": {}
-  }
+  },
+  "mirrored": false
 }
