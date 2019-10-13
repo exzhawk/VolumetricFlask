@@ -37,7 +37,16 @@ public class Items {
             ItemVolumetricFlask.VOLUMETRIC_FLASK_72,
             ItemVolumetricFlask.VOLUMETRIC_FLASK_144,
             ItemVolumetricFlask.VOLUMETRIC_FLASK_100,
-            ItemVolumetricFlask.VOLUMETRIC_FLASK_1000);
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_1000,
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_50,
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_250,
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_2000,
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_4000,
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_8000,
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_16000,
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_32000,
+            ItemVolumetricFlask.VOLUMETRIC_FLASK_64000
+    );
     public static final BlockOInterface BLOCK_O_INTERFACE = new BlockOInterface();
     public static final ItemBlock ITEM_BLOCK_O_INTERFACE = new ItemBlock(BLOCK_O_INTERFACE);
     public static final BlockBuffer BLOCK_BUFFER = new BlockBuffer();

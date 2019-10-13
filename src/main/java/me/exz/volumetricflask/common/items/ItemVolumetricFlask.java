@@ -22,6 +22,14 @@ public class ItemVolumetricFlask extends Item {
     public static final ItemVolumetricFlask VOLUMETRIC_FLASK_144 = new ItemVolumetricFlask(144);
     public static final ItemVolumetricFlask VOLUMETRIC_FLASK_100 = new ItemVolumetricFlask(100);
     public static final ItemVolumetricFlask VOLUMETRIC_FLASK_1000 = new ItemVolumetricFlask(1000);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_50 = new ItemVolumetricFlask(50);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_250 = new ItemVolumetricFlask(250);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_2000 = new ItemVolumetricFlask(2000);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_4000 = new ItemVolumetricFlask(4000);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_8000 = new ItemVolumetricFlask(8000);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_16000 = new ItemVolumetricFlask(16000);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_32000 = new ItemVolumetricFlask(32000);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_64000 = new ItemVolumetricFlask(64000);
 
     public int capacity;
 
