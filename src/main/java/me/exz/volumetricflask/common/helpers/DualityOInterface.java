@@ -5,6 +5,7 @@ import appeng.api.config.Actionable;
 import appeng.api.config.Settings;
 import appeng.api.config.YesNo;
 import appeng.api.implementations.tiles.ICraftingMachine;
+import appeng.api.networking.IGridNode;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.storage.IMEInventory;
@@ -24,6 +25,7 @@ import appeng.util.InventoryAdaptor;
 import appeng.util.inv.AdaptorItemHandler;
 import me.exz.volumetricflask.common.items.ItemVolumetricFlask;
 import me.exz.volumetricflask.utils.FluidAdaptor;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -362,6 +364,13 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
             } catch (GridAccessException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void setPlacer(EntityPlayer player) {
+        AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
+        if (gridProxy != null) {
+            gridProxy.setOwner(player);
         }
     }
 }

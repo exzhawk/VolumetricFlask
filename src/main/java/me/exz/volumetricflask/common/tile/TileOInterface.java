@@ -1,6 +1,5 @@
 package me.exz.volumetricflask.common.tile;
 
-import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.config.Upgrades;
 import appeng.api.networking.IGridNode;
@@ -17,29 +16,23 @@ import appeng.api.util.AECableType;
 import appeng.api.util.AEPartLocation;
 import appeng.api.util.DimensionalCoord;
 import appeng.api.util.IConfigManager;
-import appeng.core.sync.GuiBridge;
 import appeng.helpers.DualityInterface;
 import appeng.tile.misc.TileInterface;
-import appeng.util.Platform;
 import appeng.util.inv.InvOperation;
 import com.google.common.collect.ImmutableSet;
-import io.netty.buffer.ByteBuf;
 import me.exz.volumetricflask.common.helpers.DualityOInterface;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
 
 
@@ -206,6 +199,10 @@ public class TileOInterface extends TileInterface implements ITickable {
             return;
         }
         this.duality.update();
+    }
+
+    public void setPlacer(EntityPlayer player) {
+        this.duality.setPlacer(player);
     }
 }
 

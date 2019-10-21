@@ -34,7 +34,7 @@ public class BlockFiller extends Block {
         this.setCreativeTab(TAB_VOLUMETRIC_FLASK);
         this.setSoundType(SoundType.STONE);
         this.setHardness(2.5F);
-        this.setHarvestLevel("pickaxe",0);
+        this.setHarvestLevel("pickaxe", 0);
     }
 
     @Override

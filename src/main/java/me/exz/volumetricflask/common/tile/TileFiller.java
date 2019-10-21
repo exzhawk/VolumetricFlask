@@ -60,8 +60,8 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
     private boolean isFirstGetGridNode = true;
     ItemStack returnStack = null;
 
-    protected IGrid grid;
-    protected int usedChannels;
+    private IGrid grid;
+    private int usedChannels;
 
     @Override
     public void provideCrafting(ICraftingProviderHelper craftingTracker) {
@@ -362,6 +362,9 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
                 node.updateState();
             }
         }
+    }
+    @Override
+    public void securityBreak() {
     }
 
     @Override
