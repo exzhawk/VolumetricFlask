@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "volumetricflask:part_o_interface"
+    }
+  ],
+  "result": {
+    "item": "volumetricflask:o_interface"
+  }
+}

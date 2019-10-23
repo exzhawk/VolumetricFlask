@@ -11,7 +11,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = "0.9"
+version = "0.10"
 group = "me.exz.volumetricflask" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "volumetricflask"
 
@@ -90,4 +90,8 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+runClient {
+    args '-username', 'e', '-width', '1440', '-height', '900'
 }

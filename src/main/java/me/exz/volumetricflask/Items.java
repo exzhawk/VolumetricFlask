@@ -1,8 +1,10 @@
 package me.exz.volumetricflask;
 
+import appeng.api.AEApi;
 import me.exz.volumetricflask.common.block.BlockBuffer;
 import me.exz.volumetricflask.common.block.BlockFiller;
 import me.exz.volumetricflask.common.block.BlockOInterface;
+import me.exz.volumetricflask.common.items.ItemPartOInterface;
 import me.exz.volumetricflask.common.items.ItemVolumetricFlask;
 import me.exz.volumetricflask.common.tile.TileBuffer;
 import me.exz.volumetricflask.common.tile.TileFiller;
@@ -26,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static me.exz.volumetricflask.VolumetricFlask.MODID;
+import static me.exz.volumetricflask.common.parts.PartOInterface.*;
 
 @Mod.EventBusSubscriber(modid = MODID)
 public class Items {
@@ -54,6 +57,8 @@ public class Items {
     public static final BlockFiller BLOCK_FILLER = new BlockFiller();
     public static final ItemBlock ITEM_BLOCK_FILLER = new ItemBlock(BLOCK_FILLER);
 
+    public static final ItemPartOInterface ITEM_PART_O_INTERFACE = new ItemPartOInterface();
+
     public Items() {
         BLOCK_O_INTERFACE.setTileEntity(TileOInterface.class);
     }
@@ -64,6 +69,7 @@ public class Items {
         for (ItemVolumetricFlask volumetricFlask : VOLUMETRIC_FLASKS) {
             registry.register(volumetricFlask);
         }
+        registry.register(ITEM_PART_O_INTERFACE);
         ITEM_BLOCK_O_INTERFACE.setRegistryName(ITEM_BLOCK_O_INTERFACE.getBlock().getRegistryName());
         registry.register(ITEM_BLOCK_O_INTERFACE);
         ITEM_BLOCK_BUFFER.setRegistryName(ITEM_BLOCK_BUFFER.getBlock().getRegistryName());
@@ -93,5 +99,7 @@ public class Items {
         ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_O_INTERFACE, 0, new ModelResourceLocation(ITEM_BLOCK_O_INTERFACE.getRegistryName(), "omnidirectional=true"));
         ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_BUFFER, 0, new ModelResourceLocation(ITEM_BLOCK_BUFFER.getRegistryName(), "inventory"));
         ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_FILLER, 0, new ModelResourceLocation(ITEM_BLOCK_FILLER.getRegistryName(), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(ITEM_PART_O_INTERFACE, 0, new ModelResourceLocation(ITEM_PART_O_INTERFACE.getRegistryName().toString()));
+        AEApi.instance().registries().partModels().registerModels(MODEL_BASE, MODEL_ON, MODEL_OFF, MODEL_HAS_CHANNEL);
     }
 }

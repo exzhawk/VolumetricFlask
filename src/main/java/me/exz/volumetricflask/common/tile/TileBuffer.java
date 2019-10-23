@@ -1,11 +1,14 @@
 package me.exz.volumetricflask.common.tile;
 
+import appeng.api.parts.IPart;
 import appeng.api.storage.data.IAEFluidStack;
+import appeng.fluids.tile.TileFluidInterface;
 import appeng.fluids.util.AEFluidInventory;
 import appeng.fluids.util.IAEFluidInventory;
 import appeng.fluids.util.IAEFluidTank;
 import appeng.tile.inventory.AppEngInternalInventory;
 import appeng.tile.misc.TileInterface;
+import appeng.tile.networking.TileCableBus;
 import appeng.util.InventoryAdaptor;
 import appeng.util.inv.IAEAppEngInventory;
 import appeng.util.inv.InvOperation;
@@ -81,7 +84,13 @@ public class TileBuffer extends TileEntity implements ITickable, IAEAppEngInvent
             if (te instanceof TileInterface) {
                 continue;
             }
-            if (te instanceof TileBuffer){
+            if (te instanceof TileBuffer) {
+                continue;
+            }
+            if (te instanceof TileCableBus) {
+                continue;
+            }
+            if (te instanceof TileFluidInterface) {
                 continue;
             }
 
@@ -90,6 +99,9 @@ public class TileBuffer extends TileEntity implements ITickable, IAEAppEngInvent
             if (ad != null) {
                 for (int i = 0; i < inventory.getSlots(); i++) {
                     final ItemStack is = inventory.getStackInSlot(i);
+                    if (is.isEmpty()) {
+                        continue;
+                    }
                     ItemStack left = ad.addItems(is);
                     inventory.setStackInSlot(i, left);
                 }
