@@ -55,7 +55,7 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
     private final Item encodedPattern = AEApi.instance().definitions().items().encodedPattern().maybeItem().orElse(null);
     private final IFluidStorageChannel fluidStorageChannel = AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class);
     private final IItemStorageChannel itemStorageChannel = AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class);
-    private List<Fluid> fluids = new ArrayList<Fluid>();
+    private List<Fluid> fluids = new ArrayList<>();
     private IGridNode node = null;
     private boolean isFirstGetGridNode = true;
     ItemStack returnStack = null;
@@ -212,7 +212,7 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
 
     @Override
     public double getIdlePowerUsage() {
-        return 0;
+        return 1.0D;
     }
 
     @Nonnull
