@@ -1,10 +1,11 @@
 package me.exz.volumetricflask.common.block;
 
 import appeng.api.AEApi;
-import appeng.api.networking.*;
-import appeng.api.util.AEColor;
+import appeng.api.networking.IGridHost;
+import appeng.api.networking.IGridNode;
 import appeng.api.util.AEPartLocation;
-import appeng.api.util.DimensionalCoord;
+import appeng.util.Platform;
+import com.google.common.collect.Lists;
 import me.exz.volumetricflask.common.tile.TileFiller;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -15,13 +16,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import java.util.EnumSet;
+import java.util.List;
 
 import static me.exz.volumetricflask.TabVolumetricFlask.TAB_VOLUMETRIC_FLASK;
 import static me.exz.volumetricflask.VolumetricFlask.MODID;
@@ -69,6 +68,28 @@ public class BlockFiller extends Block {
         if (tile instanceof TileFiller) {
             ((TileFiller) tile).registerListener();
         }
+    }
+
+    @Override
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        ItemStack heldItem;
+        if (player != null && !player.getHeldItem(hand).isEmpty()) {
+            heldItem = player.getHeldItem(hand);
+            if (Platform.isWrench(player, heldItem, pos) && player.isSneaking()) {
+                final IBlockState blockState = world.getBlockState(pos);
+                final Block block = blockState.getBlock();
+                final ItemStack[] itemDropCandidates = Platform.getBlockDrops(world, pos);
+                if (block.removedByPlayer(blockState, world, pos, player, false)) {
+                    final List<ItemStack> itemsToDrop = Lists.newArrayList(itemDropCandidates);
+                    Platform.spawnDrops(world, pos, itemsToDrop);
+                    world.setBlockToAir(pos);
+                }
+
+                return false;
+
+            }
+        }
+        return super.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
     }
 
     @Override
