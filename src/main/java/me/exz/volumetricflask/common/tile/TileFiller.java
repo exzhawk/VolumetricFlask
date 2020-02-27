@@ -85,6 +85,7 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
                 ItemStack pattern = getPattern(empty, filled);
                 ICraftingPatternItem patter = (ICraftingPatternItem) pattern.getItem();
                 ICraftingPatternDetails details = patter.getPatternForItem(pattern, world);
+                details.setPriority(-1);
                 if (details == null) {
                     continue;
                 }
