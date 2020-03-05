@@ -5,12 +5,13 @@ import appeng.api.config.Actionable;
 import appeng.api.config.Settings;
 import appeng.api.config.YesNo;
 import appeng.api.implementations.tiles.ICraftingMachine;
-import appeng.api.networking.IGridNode;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.channels.IFluidStorageChannel;
+import appeng.api.storage.channels.IItemStorageChannel;
 import appeng.api.storage.data.IAEFluidStack;
+import appeng.api.storage.data.IAEItemStack;
 import appeng.fluids.helper.DualityFluidInterface;
 import appeng.fluids.helper.IFluidInterfaceHost;
 import appeng.fluids.util.AEFluidInventory;
@@ -28,26 +29,31 @@ import me.exz.volumetricflask.utils.FluidAdaptor;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import static net.minecraftforge.fluids.capability.CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY;
 
 public class DualityOInterface extends DualityInterface implements IAEFluidInventory, ITickable {
 
     private final AEFluidInventory tanks = new AEFluidInventory(this, 1, Fluid.BUCKET_VOLUME * 64);
     private static final String FLUID_NBT_KEY = "storage_fluid";
+    private final HashMap<Fluid, ArrayList<ItemStack>> fillMap = new HashMap<>();
+    private static final String FILL_MAP_NBT_KEY = "fill_map";
 
     public DualityOInterface(AENetworkProxy networkProxy, IInterfaceHost ih) {
         super(networkProxy, ih);
@@ -122,13 +128,47 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
                 }
             }
 
+            NonNullList<ItemStack> netStackList = NonNullList.withSize(table.getSizeInventory(), ItemStack.EMPTY);
+            ArrayList<ItemStack> matchedFilledFlaskList = new ArrayList<>();
+
+            for (int x = 0; x < table.getSizeInventory(); x++) {
+                final ItemStack is = table.getStackInSlot(x);
+                netStackList.set(x, is.copy());
+            }
+            for (IAEItemStack aeItemStack : patternDetails.getOutputs()) {
+                final ItemStack outputItemStack = aeItemStack.createItemStack();
+                if (outputItemStack.getItem() instanceof ItemVolumetricFlask) {
+                    if (!isEmptyVolumetricFlask(outputItemStack)) {
+                        //is filled volumetric flask
+                        for (ItemStack is : netStackList) {
+                            if (isEmptyVolumetricFlask(is)) {
+                                //is empty volumetric flask
+                                if (is.getItem() == outputItemStack.getItem()) {
+                                    //same capacity, aka same item
+                                    int matchedCount = Math.min(is.getCount(), outputItemStack.getCount());
+                                    ItemStack matchedFilledFlask = outputItemStack.copy();
+                                    matchedFilledFlask.setCount(matchedCount);
+                                    matchedFilledFlaskList.add(matchedFilledFlask);
+                                    outputItemStack.setCount(outputItemStack.getCount() - matchedCount);
+                                    is.setCount(is.getCount() - matchedCount);
+                                    if (outputItemStack.isEmpty()) {
+                                        //skip left input ItemStack
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
             //determine whether pattern has flask or other items
             boolean hasOther = false;
             boolean hasFlask = false;
-            for (int x = 0; x < table.getSizeInventory(); x++) {
-                final ItemStack is = table.getStackInSlot(x);
+            for (final ItemStack is : netStackList) {
                 if (!is.isEmpty()) {
-                    if (is.getItem() instanceof ItemVolumetricFlask) {
+                    if (is.getItem() instanceof ItemVolumetricFlask && !isEmptyVolumetricFlask(is)) {
                         hasFlask = true;
                     } else {
                         hasOther = true;
@@ -147,8 +187,19 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
                 }
             }
 
-            for (int x = 0; x < table.getSizeInventory(); x++) {
-                final ItemStack is = table.getStackInSlot(x);
+            for (ItemStack matchedFilledFlask : matchedFilledFlaskList) {
+                //noinspection ConstantConditions
+                Fluid fluid = matchedFilledFlask.getCapability(FLUID_HANDLER_ITEM_CAPABILITY, null).getTankProperties()[0].getContents().getFluid();
+                if (fillMap.containsKey(fluid)) {
+                    fillMap.get(fluid).add(matchedFilledFlask);
+                } else {
+                    ArrayList<ItemStack> itemStackList = new ArrayList<>();
+                    itemStackList.add(matchedFilledFlask);
+                    fillMap.put(fluid, itemStackList);
+                }
+            }
+
+            for (final ItemStack is : netStackList) {
                 if (!is.isEmpty()) {
                     if (is.getItem() instanceof ItemVolumetricFlask && fad != null) {
                         final ItemStack added = fad.addFlask(is);
@@ -170,6 +221,13 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
         return false;
     }
 
+    private boolean isEmptyVolumetricFlask(ItemStack is) {
+        if (is.getItem() instanceof ItemVolumetricFlask) {
+            //noinspection ConstantConditions
+            return is.getCapability(FLUID_HANDLER_ITEM_CAPABILITY, null).getTankProperties()[0].getContents() == null;
+        }
+        return false;
+    }
 
     private boolean hasItemsToSend() {
         List<ItemStack> waitingToSend = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "waitingToSend");
@@ -313,6 +371,7 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
         }
     }
 
+    @SuppressWarnings("unused")
     private IFluidHandler getFluidHandler(final TileEntity te, final EnumFacing d) {
         if (te != null && te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, d)) {
             return te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, d);
@@ -324,17 +383,41 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
     public void writeToNBT(NBTTagCompound data) {
         super.writeToNBT(data);
         this.tanks.writeToNBT(data, FLUID_NBT_KEY);
+        NBTTagCompound fillMapNbt = new NBTTagCompound();
+        for (Map.Entry<Fluid, ArrayList<ItemStack>> fluidArrayListEntry : fillMap.entrySet()) {
+            Fluid fluid = fluidArrayListEntry.getKey();
+            ArrayList<ItemStack> itemStackArrayList = fluidArrayListEntry.getValue();
+            NBTTagList itemNbtList = new NBTTagList();
+            for (ItemStack itemStack : itemStackArrayList) {
+                NBTTagCompound itemStackNbtTag = new NBTTagCompound();
+                itemStack.writeToNBT(itemStackNbtTag);
+                itemNbtList.appendTag(itemStackNbtTag);
+            }
+            fillMapNbt.setTag(fluid.getName(), itemNbtList);
+        }
+        data.setTag(FILL_MAP_NBT_KEY, fillMapNbt);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound data) {
         super.readFromNBT(data);
+        NBTTagCompound fillMapNbt = data.getCompoundTag(FILL_MAP_NBT_KEY);
+        for (String fluidName : fillMapNbt.getKeySet()) {
+            Fluid fluid = FluidRegistry.getFluid(fluidName);
+            ArrayList<ItemStack> itemStackArrayList = new ArrayList<>();
+            for (NBTBase itemStackNbtTag : fillMapNbt.getTagList(fluidName, 10)) {
+                ItemStack itemStack = new ItemStack((NBTTagCompound) itemStackNbtTag);
+                itemStackArrayList.add(itemStack);
+            }
+            fillMap.put(fluid, itemStackArrayList);
+        }
         this.tanks.readFromNBT(data, FLUID_NBT_KEY);
     }
 
     @Override
     public <T> T getCapability(Capability<T> capabilityClass, EnumFacing facing) {
         if (capabilityClass == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
+            //noinspection unchecked
             return (T) this.tanks;
         } else {
             return super.getCapability(capabilityClass, facing);
@@ -356,11 +439,54 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
         IAEFluidStack aeFluidStack = this.tanks.getFluidInSlot(0);
         if (aeFluidStack != null && aeFluidStack.getStackSize() != 0) {
             try {
-                AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
-                IMEInventory<IAEFluidStack> dest = gridProxy.getStorage().getInventory(AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class));
-                IActionSource src = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "interfaceRequestSource");
-                IAEFluidStack left = dest.injectItems(aeFluidStack.copy(), Actionable.MODULATE, src);
-                this.tanks.setFluidInSlot(0, left);
+                Fluid aeFluidStackFluid = aeFluidStack.getFluid();
+                if (fillMap.containsKey(aeFluidStackFluid)) {
+                    ArrayList<ItemStack> fillList = fillMap.get(aeFluidStackFluid);
+                    ItemStack currentItemStack = fillList.get(0);
+                    long currentVolume = aeFluidStack.getStackSize();
+                    //noinspection ConstantConditions
+                    int capacity = currentItemStack.getCapability(FLUID_HANDLER_ITEM_CAPABILITY, null).getTankProperties()[0].getCapacity();
+                    int filledCount = (int) Math.min(currentItemStack.getCount(), currentVolume / capacity);
+                    if (filledCount != 0) {
+                        AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
+                        IMEInventory<IAEItemStack> dest = gridProxy.getStorage().getInventory(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
+                        IActionSource src = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "interfaceRequestSource");
+                        ItemStack filledFlaskItemStack = currentItemStack.copy();
+                        filledFlaskItemStack.setCount(filledCount);
+                        IAEItemStack leftFilled = dest.injectItems(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createStack(filledFlaskItemStack), Actionable.MODULATE, src);
+                        int leftCount;
+                        if (leftFilled == null) {
+                            leftCount = 0;
+                        } else {
+                            leftCount = (int) leftFilled.getStackSize();
+                        }
+                        filledCount = filledCount - leftCount;
+
+                        int leftFilledCount = currentItemStack.getCount() - filledCount;
+                        if (leftFilledCount == 0) {
+                            fillList.remove(0);
+                            if (fillList.isEmpty()) {
+                                fillMap.remove(aeFluidStackFluid);
+                            }
+                        } else {
+                            currentItemStack.setCount(leftFilledCount);
+                        }
+                        IAEFluidStack left = aeFluidStack.copy();
+                        long leftVolume = currentVolume - capacity * filledCount;
+                        if (leftVolume == 0) {
+                            this.tanks.setFluidInSlot(0, null);
+                        } else {
+                            left.setStackSize(leftVolume);
+                            this.tanks.setFluidInSlot(0, left);
+                        }
+                    }
+                } else {
+                    AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
+                    IMEInventory<IAEFluidStack> dest = gridProxy.getStorage().getInventory(AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class));
+                    IActionSource src = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "interfaceRequestSource");
+                    IAEFluidStack left = dest.injectItems(aeFluidStack.copy(), Actionable.MODULATE, src);
+                    this.tanks.setFluidInSlot(0, left);
+                }
             } catch (GridAccessException e) {
                 e.printStackTrace();
             }
