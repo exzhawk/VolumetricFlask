@@ -2,9 +2,11 @@ package me.exz.volumetricflask.common.items;
 
 import me.exz.volumetricflask.TabVolumetricFlask;
 import me.exz.volumetricflask.VolumetricFlask;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
@@ -41,6 +43,18 @@ public class ItemVolumetricFlask extends Item {
         this.capacity = capacity;
     }
 
+    @SuppressWarnings("NullableProblems")
+    @Override
+    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
+        if (!this.isInCreativeTab(tab)) {
+            return;
+        }
+        final ItemStack stack = new ItemStack(this);
+        stack.setTagCompound(new NBTTagCompound());
+        items.add(stack);
+    }
+
+
     @Nullable
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
@@ -48,6 +62,7 @@ public class ItemVolumetricFlask extends Item {
     }
 
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
         FluidHandlerItemStackSimple fluidHandlerItemStackSimple = (FluidHandlerItemStackSimple) stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
