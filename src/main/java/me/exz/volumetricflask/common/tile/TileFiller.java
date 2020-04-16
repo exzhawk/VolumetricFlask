@@ -43,9 +43,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import static me.exz.volumetricflask.Items.VOLUMETRIC_FLASKS;
 
@@ -59,6 +57,7 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
     private IGridNode node = null;
     private boolean isFirstGetGridNode = true;
     ItemStack returnStack = null;
+    private static final Map<Fluid, List<ICraftingPatternDetails>> fluidCraftingPatternDetailsListMapping = new HashMap<>();
 
     private IGrid grid;
     private int usedChannels;
@@ -75,20 +74,28 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
             if (fluid == null) {
                 continue;
             }
-            for (ItemVolumetricFlask flask : VOLUMETRIC_FLASKS) {
-                ItemStack empty = new ItemStack(flask, 1);
-                empty.setTagCompound(new NBTTagCompound());
-                ItemStack filled = new ItemStack(flask, 1);
-                IFluidHandler fluidHandler = filled.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
-                int capacity = flask.capacity;
-                fluidHandler.fill(new FluidStack(fluid, capacity), true);
-                ItemStack pattern = getPattern(empty, filled);
-                ICraftingPatternItem patter = (ICraftingPatternItem) pattern.getItem();
-                ICraftingPatternDetails details = patter.getPatternForItem(pattern, world);
-                details.setPriority(-1);
-                if (details == null) {
-                    continue;
+            if (!fluidCraftingPatternDetailsListMapping.containsKey(fluid)) {
+                List<ICraftingPatternDetails> craftingPatternItemList = new ArrayList<>();
+                for (ItemVolumetricFlask flask : VOLUMETRIC_FLASKS) {
+                    ItemStack empty = new ItemStack(flask, 1);
+                    empty.setTagCompound(new NBTTagCompound());
+                    ItemStack filled = new ItemStack(flask, 1);
+                    IFluidHandler fluidHandler = filled.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+                    int capacity = flask.capacity;
+                    fluidHandler.fill(new FluidStack(fluid, capacity), true);
+                    ItemStack pattern = getPattern(empty, filled);
+                    ICraftingPatternItem patter = (ICraftingPatternItem) pattern.getItem();
+                    ICraftingPatternDetails details = patter.getPatternForItem(pattern, world);
+                    details.setPriority(-1);
+                    if (details == null) {
+                        continue;
+                    }
+                    craftingPatternItemList.add(details);
+                    fluidCraftingPatternDetailsListMapping.put(fluid, craftingPatternItemList);
                 }
+            }
+            List<ICraftingPatternDetails> craftingPatternDetailsList = fluidCraftingPatternDetailsListMapping.get(fluid);
+            for (ICraftingPatternDetails details : craftingPatternDetailsList) {
                 craftingTracker.addCraftingOption(this, details);
             }
         }
@@ -364,6 +371,7 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
             }
         }
     }
+
     @Override
     public void securityBreak() {
     }
