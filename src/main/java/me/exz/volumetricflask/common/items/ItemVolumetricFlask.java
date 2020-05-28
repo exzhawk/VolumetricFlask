@@ -32,6 +32,9 @@ public class ItemVolumetricFlask extends Item {
     public static final ItemVolumetricFlask VOLUMETRIC_FLASK_16000 = new ItemVolumetricFlask(16000);
     public static final ItemVolumetricFlask VOLUMETRIC_FLASK_32000 = new ItemVolumetricFlask(32000);
     public static final ItemVolumetricFlask VOLUMETRIC_FLASK_64000 = new ItemVolumetricFlask(64000);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_33 = new ItemVolumetricFlask(33);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_133 = new ItemVolumetricFlask(133);
+    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_300 = new ItemVolumetricFlask(300);
 
     public int capacity;
 
