@@ -337,6 +337,10 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
                 continue;
             }
 
+            if (isEmptyVolumetricFlask(is)){
+                continue;
+            }
+
             if (!fad.simulateAdd(is.copy()).isEmpty()) {
                 return false;
             }
