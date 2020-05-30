@@ -14,36 +14,20 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStackSimple;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ItemVolumetricFlask extends Item {
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_16 = new ItemVolumetricFlask(16);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_32 = new ItemVolumetricFlask(32);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_18 = new ItemVolumetricFlask(18);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_36 = new ItemVolumetricFlask(36);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_72 = new ItemVolumetricFlask(72);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_144 = new ItemVolumetricFlask(144);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_100 = new ItemVolumetricFlask(100);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_1000 = new ItemVolumetricFlask(1000);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_50 = new ItemVolumetricFlask(50);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_250 = new ItemVolumetricFlask(250);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_2000 = new ItemVolumetricFlask(2000);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_4000 = new ItemVolumetricFlask(4000);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_8000 = new ItemVolumetricFlask(8000);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_16000 = new ItemVolumetricFlask(16000);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_32000 = new ItemVolumetricFlask(32000);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_64000 = new ItemVolumetricFlask(64000);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_33 = new ItemVolumetricFlask(33);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_133 = new ItemVolumetricFlask(133);
-    public static final ItemVolumetricFlask VOLUMETRIC_FLASK_300 = new ItemVolumetricFlask(300);
+    public static final int[] CAPACITIES = new int[]{100,200};
 
-    public int capacity;
-
-    public ItemVolumetricFlask(int capacity) {
+    public ItemVolumetricFlask() {
         this.setUnlocalizedName(VolumetricFlask.MODID + ".volumetric_flask");
-        this.setRegistryName("volumetric_flask_" + capacity);
+        this.setRegistryName("volumetric_flask");
         this.setMaxStackSize(64);
         this.setCreativeTab(TabVolumetricFlask.TAB_VOLUMETRIC_FLASK);
-        this.capacity = capacity;
+        setHasSubtypes(true);
+        setMaxDamage(0);
+        setNoRepair();
     }
 
     @SuppressWarnings("NullableProblems")
@@ -52,16 +36,30 @@ public class ItemVolumetricFlask extends Item {
         if (!this.isInCreativeTab(tab)) {
             return;
         }
-        final ItemStack stack = new ItemStack(this);
-        stack.setTagCompound(new NBTTagCompound());
-        items.add(stack);
+//        for (int capacity: CAPACITIES){
+//            final ItemStack stack = new ItemStack(this,1,capacity);
+//            stack.setTagCompound(new NBTTagCompound());
+//            items.add(stack);
+//        }
+        items.addAll(getAllVolumetricFlasks());
+    }
+
+    public List<ItemStack> getAllVolumetricFlasks(){
+        // TODO: 2020/5/30 invoke once and save all flasks for later usage
+        List<ItemStack> allVolumetricFlasks=new ArrayList<>();
+        for (int capacity : CAPACITIES) {
+            final ItemStack stack = new ItemStack(this,1,capacity);
+            stack.setTagCompound(new NBTTagCompound());
+            allVolumetricFlasks.add(stack);
+        }
+        return allVolumetricFlasks;
     }
 
 
     @Nullable
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
-        return new FluidHandlerItemStackSimple(stack, capacity);
+        return new FluidHandlerItemStackSimple(stack, stack.getMetadata());// TODO: 2020/5/30 get meta as capacity from itemstack
     }
 
 
@@ -78,7 +76,7 @@ public class ItemVolumetricFlask extends Item {
                 fluidName = "Empty";
             }
             IFluidTankProperties[] fluidTankProperties = fluidHandlerItemStackSimple.getTankProperties();
-            return String.format("%dmB Volumetric Flask (%s)", capacity, fluidName);
+            return String.format("%dmB Volumetric Flask (%s)",stack.getMetadata(), fluidName);// TODO: 2020/5/30 get meta ass capacity from itemstack
         } else {
             return "Volumetric Flask";
         }

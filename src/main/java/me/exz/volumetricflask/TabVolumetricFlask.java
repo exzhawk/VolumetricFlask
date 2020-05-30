@@ -3,7 +3,7 @@ package me.exz.volumetricflask;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 
-import static me.exz.volumetricflask.common.items.ItemVolumetricFlask.VOLUMETRIC_FLASK_144;
+import static me.exz.volumetricflask.Items.VOLUMETRIC_FLASK;
 
 public class TabVolumetricFlask extends CreativeTabs {
     public static final TabVolumetricFlask TAB_VOLUMETRIC_FLASK = new TabVolumetricFlask();
@@ -14,6 +14,6 @@ public class TabVolumetricFlask extends CreativeTabs {
 
     @Override
     public ItemStack getTabIconItem() {
-        return new ItemStack(VOLUMETRIC_FLASK_144);
+        return new ItemStack(VOLUMETRIC_FLASK); // TODO: 2020/5/30 get a real one with capacity
     }
 }

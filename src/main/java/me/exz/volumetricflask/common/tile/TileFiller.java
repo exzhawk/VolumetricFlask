@@ -25,7 +25,6 @@ import appeng.api.util.AEPartLocation;
 import appeng.api.util.DimensionalCoord;
 import appeng.me.helpers.MachineSource;
 import appeng.tile.grid.AENetworkTile;
-import me.exz.volumetricflask.common.items.ItemVolumetricFlask;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.inventory.InventoryCrafting;
@@ -45,7 +44,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-import static me.exz.volumetricflask.Items.VOLUMETRIC_FLASKS;
+import static me.exz.volumetricflask.Items.VOLUMETRIC_FLASK;
+
 
 public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, ICraftingProvider, IMEMonitorHandlerReceiver<IAEFluidStack>, ITickable {
 
@@ -76,12 +76,11 @@ public class TileFiller extends AENetworkTile implements IGridHost, IGridBlock, 
             }
             if (!fluidCraftingPatternDetailsListMapping.containsKey(fluid)) {
                 List<ICraftingPatternDetails> craftingPatternItemList = new ArrayList<>();
-                for (ItemVolumetricFlask flask : VOLUMETRIC_FLASKS) {
-                    ItemStack empty = new ItemStack(flask, 1);
-                    empty.setTagCompound(new NBTTagCompound());
-                    ItemStack filled = new ItemStack(flask, 1);
+                for (ItemStack flask : VOLUMETRIC_FLASK.getAllVolumetricFlasks()) {
+                    ItemStack empty = flask.copy();
+                    ItemStack filled = flask.copy();
                     IFluidHandler fluidHandler = filled.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
-                    int capacity = flask.capacity;
+                    int capacity = flask.getMetadata();
                     fluidHandler.fill(new FluidStack(fluid, capacity), true);
                     ItemStack pattern = getPattern(empty, filled);
                     ICraftingPatternItem patter = (ICraftingPatternItem) pattern.getItem();
