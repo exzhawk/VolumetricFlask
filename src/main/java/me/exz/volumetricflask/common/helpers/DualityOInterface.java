@@ -59,11 +59,30 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
         super(networkProxy, ih);
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T getPrivateValue(String fieldName) {
+        return (T) getPrivateValue(this, fieldName);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getPrivateValue(DualityInterface instance, String fieldName) {
+        return (T) ReflectionHelper.getPrivateValue(DualityInterface.class, instance, fieldName);
+    }
+
+    public <E> void setPrivateValue(E value, String fieldName) {
+        setPrivateValue(this, value, fieldName);
+    }
+
+    public <E> void setPrivateValue(DualityInterface instance, E value, String fieldName) {
+        ReflectionHelper.setPrivateValue(DualityInterface.class, instance, value, fieldName);
+    }
+
+
     @Override
     public boolean pushPattern(ICraftingPatternDetails patternDetails, InventoryCrafting table) {
-        AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
-        List<ICraftingPatternDetails> craftingList = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "craftingList");
-        IInterfaceHost iHost = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "iHost");
+        AENetworkProxy gridProxy = getPrivateValue("gridProxy");
+        List<ICraftingPatternDetails> craftingList = getPrivateValue("craftingList");
+        IInterfaceHost iHost = getPrivateValue("iHost");
 
         if (this.hasItemsToSend() || !gridProxy.isActive() || !craftingList.contains(patternDetails)) {
             return false;
@@ -77,7 +96,7 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
             final TileEntity te = w.getTileEntity(tile.getPos().offset(s));
             if (te instanceof IInterfaceHost) {
                 try {
-                    AENetworkProxy gridProxy2 = ReflectionHelper.getPrivateValue(DualityInterface.class, ((IInterfaceHost) te).getInterfaceDuality(), "gridProxy");
+                    AENetworkProxy gridProxy2 = getPrivateValue(((IInterfaceHost) te).getInterfaceDuality(), "gridProxy");
                     if (gridProxy2.getGrid() == gridProxy.getGrid()) {
                         continue;
                     }
@@ -230,7 +249,7 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
     }
 
     private boolean hasItemsToSend() {
-        List<ItemStack> waitingToSend = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "waitingToSend");
+        List<ItemStack> waitingToSend = getPrivateValue("waitingToSend");
         return waitingToSend != null && !waitingToSend.isEmpty();
     }
 
@@ -239,8 +258,8 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
             return;
         }
 
-        IInterfaceHost iHost = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "iHost");
-        List<ItemStack> waitingToSend = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "waitingToSend");
+        IInterfaceHost iHost = getPrivateValue("iHost");
+        List<ItemStack> waitingToSend = getPrivateValue("waitingToSend");
 
         final TileEntity tile = iHost.getTileEntity();
         final World w = tile.getWorld();
@@ -300,12 +319,12 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
         }
 
         if (waitingToSend.isEmpty()) {
-            ReflectionHelper.setPrivateValue(DualityInterface.class, this, null, "waitingToSend");
+            setPrivateValue(null, "waitingToSend");
         }
     }
 
     private boolean isBlocking() {
-        ConfigManager cm = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "cm");
+        ConfigManager cm = getPrivateValue("cm");
         return cm.getSetting(Settings.BLOCK) == YesNo.YES;
     }
 
@@ -358,12 +377,12 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
         if (is.isEmpty()) {
             return;
         }
-        AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
-        List<ItemStack> waitingToSend = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "waitingToSend");
+        AENetworkProxy gridProxy = getPrivateValue("gridProxy");
+        List<ItemStack> waitingToSend = getPrivateValue("waitingToSend");
         if (waitingToSend == null) {
             waitingToSend = new ArrayList<>();
-            ReflectionHelper.setPrivateValue(DualityInterface.class, this, waitingToSend, "waitingToSend");
-//            waitingToSend = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "waitingToSend");
+            setPrivateValue(waitingToSend, "waitingToSend");
+//            waitingToSend = getThisValue("waitingToSend");
         }
 
         waitingToSend.add(is);
@@ -452,9 +471,9 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
                     int capacity = currentItemStack.getCapability(FLUID_HANDLER_ITEM_CAPABILITY, null).getTankProperties()[0].getCapacity();
                     int filledCount = (int) Math.min(currentItemStack.getCount(), currentVolume / capacity);
                     if (filledCount != 0) {
-                        AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
+                        AENetworkProxy gridProxy = getPrivateValue("gridProxy");
                         IMEInventory<IAEItemStack> dest = gridProxy.getStorage().getInventory(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
-                        IActionSource src = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "interfaceRequestSource");
+                        IActionSource src = getPrivateValue("interfaceRequestSource");
                         ItemStack filledFlaskItemStack = currentItemStack.copy();
                         filledFlaskItemStack.setCount(filledCount);
                         IAEItemStack leftFilled = dest.injectItems(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createStack(filledFlaskItemStack), Actionable.MODULATE, src);
@@ -485,9 +504,9 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
                         }
                     }
                 } else {
-                    AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
+                    AENetworkProxy gridProxy = getPrivateValue("gridProxy");
                     IMEInventory<IAEFluidStack> dest = gridProxy.getStorage().getInventory(AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class));
-                    IActionSource src = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "interfaceRequestSource");
+                    IActionSource src = getPrivateValue("interfaceRequestSource");
                     IAEFluidStack left = dest.injectItems(aeFluidStack.copy(), Actionable.MODULATE, src);
                     this.tanks.setFluidInSlot(0, left);
                 }
@@ -498,7 +517,7 @@ public class DualityOInterface extends DualityInterface implements IAEFluidInven
     }
 
     public void setPlacer(EntityPlayer player) {
-        AENetworkProxy gridProxy = ReflectionHelper.getPrivateValue(DualityInterface.class, this, "gridProxy");
+        AENetworkProxy gridProxy = getPrivateValue("gridProxy");
         if (gridProxy != null) {
             gridProxy.setOwner(player);
         }
