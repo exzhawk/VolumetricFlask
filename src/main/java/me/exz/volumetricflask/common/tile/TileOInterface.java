@@ -26,7 +26,6 @@ import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -36,7 +35,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 
-public class TileOInterface extends TileInterface implements ITickable {
+public class TileOInterface extends TileInterface {
 
 
     private final DualityOInterface duality = new DualityOInterface(this.getProxy(), this);
@@ -188,17 +187,6 @@ public class TileOInterface extends TileInterface implements ITickable {
             return result;
         }
         return super.getCapability(capability, facing);
-    }
-
-    @Override
-    public void update() {
-        if (world.isRemote) {
-            return;
-        }
-        if (world.getTotalWorldTime() % 20 != 0) {
-            return;
-        }
-        this.duality.update();
     }
 
     public void setPlacer(EntityPlayer player) {
