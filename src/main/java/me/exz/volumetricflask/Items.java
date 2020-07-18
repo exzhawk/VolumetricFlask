@@ -99,7 +99,7 @@ public class Items {
         for (ItemVolumetricFlask volumetricFlask : VOLUMETRIC_FLASKS) {
             ModelLoader.setCustomModelResourceLocation(volumetricFlask, 0, new ModelResourceLocation(MODID + ":volumetric_flask", "inventory"));
         }
-        ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_O_INTERFACE, 0, new ModelResourceLocation(ITEM_BLOCK_O_INTERFACE.getRegistryName(), "omnidirectional=true"));
+        ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_O_INTERFACE, 0, new ModelResourceLocation(ITEM_BLOCK_O_INTERFACE.getRegistryName(), "facing=down,omnidirectional=true"));
         ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_BUFFER, 0, new ModelResourceLocation(ITEM_BLOCK_BUFFER.getRegistryName(), "inventory"));
         ModelLoader.setCustomModelResourceLocation(ITEM_BLOCK_FILLER, 0, new ModelResourceLocation(ITEM_BLOCK_FILLER.getRegistryName(), "inventory"));
         ModelLoader.setCustomModelResourceLocation(ITEM_PART_O_INTERFACE, 0, new ModelResourceLocation(ITEM_PART_O_INTERFACE.getRegistryName().toString()));
